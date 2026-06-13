@@ -1,5 +1,5 @@
-import { useRef, useMemo, useState } from "react";
-import { EMPLOYEES, LEFT_W, SLOT_W } from "@/constants";
+import { useRef, useMemo, useState, useEffect } from "react";
+import { EMPLOYEES, LEFT_W, SLOT_W, DAYS_PER_WEEK, SLOTS_PER_WEEK } from "@/constants";
 import { buildWorkingDays, TR_MONTH_NAMES } from "@/utils/date";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useDragInteraction } from "@/hooks/useDragInteraction";
@@ -10,12 +10,32 @@ import { ExportModal } from "@/components/ExportModal";
 import { StatModal } from "@/components/StatModal";
 import type { Assignment } from "@/types";
 
-const VISIBLE_WEEKS = 4;
+const MIN_VISIBLE_WEEKS = 2;
 const MAX_WEEKS = 104;
 
 export function PlannerGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [weekOffset, setWeekOffset] = useState(0);
+
+  // Measure scroll container width → compute how many full weeks fit
+  const [containerWidth, setContainerWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const measure = () => setContainerWidth(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const visibleWeeks = useMemo(() => {
+    const available = containerWidth - LEFT_W;
+    return Math.max(MIN_VISIBLE_WEEKS, Math.floor(available / (SLOTS_PER_WEEK * SLOT_W)));
+  }, [containerWidth]);
 
   // Modal states
   const [editSegment, setEditSegment] = useState<Assignment | null>(null);
@@ -26,13 +46,16 @@ export function PlannerGrid() {
   const allWorkingDays = useMemo(() => buildWorkingDays(MAX_WEEKS, 0), []);
 
   const visibleDays = useMemo(
-    () => allWorkingDays.slice(weekOffset * 5, (weekOffset + VISIBLE_WEEKS) * 5),
-    [allWorkingDays, weekOffset]
+    () => allWorkingDays.slice(
+      weekOffset * DAYS_PER_WEEK,
+      (weekOffset + visibleWeeks) * DAYS_PER_WEEK
+    ),
+    [allWorkingDays, weekOffset, visibleWeeks]
   );
 
-  const viewStartSlot = weekOffset * 10;
-  const visibleSlots = VISIBLE_WEEKS * 10;
-  const totalSlots = MAX_WEEKS * 10;
+  const viewStartSlot = weekOffset * SLOTS_PER_WEEK;
+  const visibleSlots  = visibleWeeks * SLOTS_PER_WEEK;
+  const totalSlots    = MAX_WEEKS * SLOTS_PER_WEEK;
 
   const {
     assignments,
@@ -57,12 +80,12 @@ export function PlannerGrid() {
     return getRowSegments(employeeId);
   };
 
-  const canGoBack = weekOffset > 0;
-  const canGoForward = weekOffset + VISIBLE_WEEKS < MAX_WEEKS;
+  const canGoBack    = weekOffset > 0;
+  const canGoForward = weekOffset + visibleWeeks < MAX_WEEKS;
 
   const rangeLabel = (() => {
     const first = visibleDays[0];
-    const last = visibleDays[visibleDays.length - 1];
+    const last  = visibleDays[visibleDays.length - 1];
     if (!first || !last) return "";
     if (first.getMonth() === last.getMonth()) {
       return `${first.getDate()} – ${last.getDate()} ${TR_MONTH_NAMES[first.getMonth()]} ${first.getFullYear()}`;
@@ -74,7 +97,6 @@ export function PlannerGrid() {
     <div>
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
       <div style={toolbarStyle}>
-        {/* Left: navigation */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             style={{ ...navBtnStyle, opacity: canGoBack ? 1 : 0.3 }}
@@ -86,12 +108,10 @@ export function PlannerGrid() {
           <button
             style={{ ...navBtnStyle, opacity: canGoForward ? 1 : 0.3 }}
             disabled={!canGoForward}
-            onClick={() => setWeekOffset((w) => Math.min(MAX_WEEKS - VISIBLE_WEEKS, w + 1))}
+            onClick={() => setWeekOffset((w) => Math.min(MAX_WEEKS - visibleWeeks, w + 1))}
             title="Sonraki hafta"
           >›</button>
         </div>
-
-        {/* Right: action buttons */}
         <div style={{ display: "flex", gap: 8 }}>
           <button style={secondaryBtnStyle} onClick={() => setShowExport(true)}>
             ⬇ Dışa Aktar
@@ -107,7 +127,7 @@ export function PlannerGrid() {
         ref={scrollRef}
         style={{
           overflow: "auto",
-          maxHeight: "70vh",
+          maxHeight: "75vh",
           border: "1px solid #E2E8F0",
           borderRadius: 14,
           background: "#fff",
@@ -115,7 +135,8 @@ export function PlannerGrid() {
           position: "relative",
         }}
       >
-        <div style={{ width: LEFT_W + visibleSlots * SLOT_W, position: "relative" }}>
+        {/* Inner div fills at least the scroll container so no empty gap on wide screens */}
+        <div style={{ minWidth: "100%", width: LEFT_W + visibleSlots * SLOT_W, position: "relative" }}>
           <GridHeader
             days={visibleDays}
             onHeaderClick={() => setStatTarget("all")}
@@ -150,7 +171,6 @@ export function PlannerGrid() {
 
       {/* ── Modals ───────────────────────────────────────────────────────── */}
 
-      {/* Gantt selection → create */}
       {modal && (
         <AssignModal
           mode="create"
@@ -165,7 +185,6 @@ export function PlannerGrid() {
         />
       )}
 
-      {/* Toolbar "Plan Ekle" → create with employee selector */}
       {showToolbarCreate && (
         <AssignModal
           mode="create-toolbar"
@@ -179,7 +198,6 @@ export function PlannerGrid() {
         />
       )}
 
-      {/* Double-click → edit */}
       {editSegment && (
         <AssignModal
           mode="edit"
@@ -195,7 +213,6 @@ export function PlannerGrid() {
         />
       )}
 
-      {/* Export */}
       {showExport && (
         <ExportModal
           assignments={assignments}
@@ -204,7 +221,6 @@ export function PlannerGrid() {
         />
       )}
 
-      {/* Stat — single employee or all */}
       {statTarget !== null && (
         <StatModal
           target={statTarget}

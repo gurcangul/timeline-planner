@@ -1,5 +1,5 @@
-import { DAY_W, HEADER_H, LEFT_W } from "@/constants";
-import { TR_DAY_NAMES, TR_MONTH_NAMES } from "@/utils/date";
+import { DAY_W, HEADER_H, LEFT_W, DAYS_PER_WEEK } from "@/constants";
+import { TR_DAY_NAMES, TR_MONTH_NAMES, isWeekend } from "@/utils/date";
 
 interface Props {
   days: Date[];
@@ -18,17 +18,21 @@ export function GridHeader({ days, onHeaderClick }: Props) {
       </div>
       <div style={{ display: "flex" }}>
         {days.map((day, i) => {
-          const isWeekStart = i % 5 === 0 && i !== 0;
+          const isWeekStart = i % DAYS_PER_WEEK === 0 && i !== 0;
+          const weekend = isWeekend(day);
           return (
             <div
               key={i}
               style={{
                 ...dayCellStyle,
-                ...(isWeekStart ? weekSeparatorStyle : {}),
+                background: weekend ? "#F1F2F6" : "#F8FAFC",
+                ...(isWeekStart ? weekSepStyle : {}),
               }}
             >
-              <span style={dowStyle}>{TR_DAY_NAMES[day.getDay()]}</span>
-              <span style={dayNumStyle}>
+              <span style={{ ...dowStyle, color: weekend ? "#9CA3AF" : "#94A3B8" }}>
+                {TR_DAY_NAMES[day.getDay()]}
+              </span>
+              <span style={{ ...dayNumStyle, color: weekend ? "#9CA3AF" : "#0F172A" }}>
                 {day.getDate()}
                 <span style={monthStyle}> {TR_MONTH_NAMES[day.getMonth()]}</span>
               </span>
@@ -66,7 +70,6 @@ const dayCellStyle: React.CSSProperties = {
   width: DAY_W,
   borderRight: "1px solid #EEF2F6",
   borderBottom: "1px solid #E2E8F0",
-  background: "#F8FAFC",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -75,13 +78,12 @@ const dayCellStyle: React.CSSProperties = {
   padding: "6px 0",
 };
 
-const weekSeparatorStyle: React.CSSProperties = {
+const weekSepStyle: React.CSSProperties = {
   borderLeft: "2px solid #CBD5E1",
 };
 
 const dowStyle: React.CSSProperties = {
   fontSize: 10.5,
-  color: "#94A3B8",
   fontWeight: 600,
   textTransform: "uppercase",
 };
@@ -90,7 +92,6 @@ const dayNumStyle: React.CSSProperties = {
   fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace",
   fontSize: 15,
   fontWeight: 700,
-  color: "#0F172A",
   lineHeight: 1.1,
 };
 

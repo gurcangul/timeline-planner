@@ -1,5 +1,5 @@
-import { DAY_W, ROW_H, LEFT_W, SLOT_W } from "@/constants";
-import { getInitials } from "@/utils/date";
+import { DAY_W, ROW_H, LEFT_W, SLOT_W, DAYS_PER_WEEK } from "@/constants";
+import { getInitials, isWeekend } from "@/utils/date";
 import { computeLanes } from "@/engine/pushEngine";
 import { SegmentBar } from "./SegmentBar";
 import type { Assignment, SelectionRange } from "@/types";
@@ -11,8 +11,8 @@ interface Props {
   striped: boolean;
   viewStartSlot: number;
   visibleSlots: number;
-  days: Date[];                 // visible days only
-  segments: Assignment[];       // all row segments (absolute slots)
+  days: Date[];
+  segments: Assignment[];
   selection: SelectionRange | null;
   onTrackPointerDown: (e: React.PointerEvent) => void;
   onSegmentPointerDown: (e: React.PointerEvent, seg: Assignment) => void;
@@ -43,7 +43,6 @@ export function EmployeeRow({
 }: Props) {
   const viewEndSlot = viewStartSlot + visibleSlots;
 
-  // Only render segments that overlap the visible window
   const visibleSegs = segments.filter(
     (s) => s.startSlot < viewEndSlot && s.endSlot > viewStartSlot
   );
@@ -65,7 +64,7 @@ export function EmployeeRow({
         background: striped ? "#FBFCFE" : "#FFFFFF",
       }}
     >
-      {/* Sticky employee panel — click opens stat modal */}
+      {/* Sticky employee panel */}
       <div
         style={{ ...leftPanelStyle, minHeight: rowHeight, cursor: "pointer" }}
         onClick={() => onEmployeeClick(employeeId)}
@@ -88,33 +87,41 @@ export function EmployeeRow({
         }}
         onPointerDown={onTrackPointerDown}
       >
-        {/* Day grid lines */}
-        {days.map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: i * DAY_W,
-              width: DAY_W,
-              borderRight: "1px solid #EEF2F6",
-              boxSizing: "border-box",
-              ...(i % 5 === 0 && i !== 0 ? { borderLeft: "2px solid #CBD5E1" } : {}),
-            }}
-          >
-            <span
+        {/* Day columns */}
+        {days.map((day, i) => {
+          const weekend = isWeekend(day);
+          const isWeekStart = i % DAYS_PER_WEEK === 0 && i !== 0;
+          return (
+            <div
+              key={i}
               style={{
                 position: "absolute",
                 top: 0,
                 bottom: 0,
-                left: SLOT_W,
-                width: 1,
-                background: "#F4F7FA",
+                left: i * DAY_W,
+                width: DAY_W,
+                borderRight: "1px solid #EEF2F6",
+                boxSizing: "border-box",
+                background: weekend
+                  ? striped ? "rgba(0,0,0,0.028)" : "rgba(0,0,0,0.018)"
+                  : "transparent",
+                ...(isWeekStart ? { borderLeft: "2px solid #CBD5E1" } : {}),
               }}
-            />
-          </div>
-        ))}
+            >
+              {/* AM/PM half-day divider */}
+              <span
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  left: SLOT_W,
+                  width: 1,
+                  background: "#F4F7FA",
+                }}
+              />
+            </div>
+          );
+        })}
 
         {/* Selection overlay */}
         {selection && (
@@ -133,7 +140,7 @@ export function EmployeeRow({
           />
         )}
 
-        {/* Segment bars with lane positioning */}
+        {/* Segment bars */}
         {visibleSegs.map((seg) => {
           const lane = laneMap.get(seg.id) ?? 0;
           return (

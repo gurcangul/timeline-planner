@@ -2,10 +2,12 @@ import type { ActivityType, Employee } from "@/types";
 
 export const SLOT_W = 30;
 export const DAY_W = SLOT_W * 2;
-export const ROW_H = 54;
+export const ROW_H = 38;
 export const HEADER_H = 58;
 export const LEFT_W = 232;
 export const DEFAULT_WEEKS = 4;
+export const DAYS_PER_WEEK = 7;
+export const SLOTS_PER_WEEK = DAYS_PER_WEEK * 2; // 14
 
 export const ACTIVITY_TYPES: Record<string, ActivityType> = {
   takip: {

@@ -10,7 +10,7 @@ export function getEpochMonday(): Date {
   return monday;
 }
 
-/** Build N weeks of working days starting from (epochMonday + offsetWeeks). */
+/** Build N weeks of ALL calendar days (Mon–Sun) starting from epochMonday + offsetWeeks. */
 export function buildWorkingDays(totalWeeks: number, offsetWeeks = 0): Date[] {
   const start = getEpochMonday();
   start.setDate(start.getDate() + offsetWeeks * 7);
@@ -18,13 +18,17 @@ export function buildWorkingDays(totalWeeks: number, offsetWeeks = 0): Date[] {
   const days: Date[] = [];
   const cursor = new Date(start);
 
-  while (days.length < totalWeeks * 5) {
-    const wd = cursor.getDay();
-    if (wd !== 0 && wd !== 6) days.push(new Date(cursor));
+  while (days.length < totalWeeks * 7) {
+    days.push(new Date(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
 
   return days;
+}
+
+export function isWeekend(date: Date): boolean {
+  const d = date.getDay();
+  return d === 0 || d === 6;
 }
 
 export function slotToDate(slot: number, allDays: Date[]): Date | undefined {

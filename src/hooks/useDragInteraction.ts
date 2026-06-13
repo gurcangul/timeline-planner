@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { resolveRow } from "@/engine/pushEngine";
+import { resolveRow, resolveResizeRow } from "@/engine/pushEngine";
 import { ACTIVITY_TYPES, SLOT_W, LEFT_W } from "@/constants";
 import type {
   Assignment,
@@ -90,7 +90,10 @@ export function useDragInteraction({
         desired = { startSlot: ns, endSlot: drag.origEnd };
       }
 
-      const result = resolveRow(rowSegs, drag.id, desired, totalSlots);
+      const isResize = drag.kind === "resize-l" || drag.kind === "resize-r";
+      const result = isResize
+        ? resolveResizeRow(rowSegs, drag.id, desired, totalSlots)
+        : resolveRow(rowSegs, drag.id, desired, totalSlots);
       if (result.ok) {
         lastValidRef.current = { employeeId: drag.employeeId, segments: result.segments };
         setPreview(lastValidRef.current);

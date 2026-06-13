@@ -89,6 +89,31 @@ export function resolveRow(
 }
 
 /**
+ * Resize variant: ONLY resizes the active segment, no cascade.
+ * Other segments stay exactly where they are.
+ * Blocked only by out-of-bounds or pinned conflict.
+ */
+export function resolveResizeRow(
+  rowSegments: Assignment[],
+  activeId: string,
+  desired: Pick<Assignment, "startSlot" | "endSlot">,
+  totalSlots: number
+): ResolveOutput {
+  const active = rowSegments.find((s) => s.id === activeId);
+  if (!active) return { ok: false };
+  const next: Assignment = { ...active, ...desired };
+  if (next.startSlot < 0 || next.endSlot > totalSlots || next.startSlot >= next.endSlot) {
+    return { ok: false };
+  }
+  const pinned = rowSegments.filter((s) => s.id !== activeId && isPinned(s));
+  for (const p of pinned) {
+    if (slotsOverlap(next, p)) return { ok: false };
+  }
+  const others = rowSegments.filter((s) => s.id !== activeId);
+  return { ok: true, segments: [next, ...others] };
+}
+
+/**
  * Assigns each segment to the minimum vertical lane where no overlap exists.
  * Pure rendering helper — not used by the engine.
  */
