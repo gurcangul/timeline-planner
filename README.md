@@ -23,6 +23,8 @@ npm start        # geliştirme sunucusu → http://localhost:5173
 | `npm run build`             | TypeScript derleme + üretim çıktısı (`dist/`) |
 | `npm run preview`           | Derlenmiş çıktıyı önizler |
 | `npm run lint`              | ESLint |
+| `npm test`                  | Vitest (izleme modu) |
+| `npm run test:run`          | Vitest (tek sefer çalıştır) |
 
 > Üretim derlemesi `vite.config.ts` içinde `base: "/mgul/"` alt yolu ile alınır.
 > Backend bağlanacağında `.env` dosyasına `VITE_API_BASE_URL` eklenir
@@ -167,6 +169,21 @@ src/
 - **SheetJS (xlsx)** — Excel dışa aktarım
 - Saf **SVG** pasta grafik (harici grafik kütüphanesi yok)
 - Inline `React.CSSProperties` stilleri (CSS framework yok — bilinçli tercih)
+- **Vitest** — saf çekirdek mantığın birim testleri
+
+### Testler
+
+Testler saf, deterministik çekirdeği hedefler (DOM'a dokunmaz):
+
+| Dosya | Kapsam |
+|-------|--------|
+| `src/engine/pushEngine.test.ts` | Cascade itme, boyutlandırma (itme yok), sabit plan çakışması, üst üste binme dışlama, şerit yerleşimi |
+| `src/utils/date.test.ts` | Slot↔tarih dönüşümleri, aralık çözümü, ay/çeyrek/yıl/hafta preset'leri |
+| `src/utils/statistics.test.ts` | Tür bazında slot toplama, aralık kırpma, "Plansız" dilimi |
+
+```bash
+npm run test:run   # 35 test
+```
 
 Yol takma adı: `@` → `src/` ([vite.config.ts](vite.config.ts) ve `tsconfig`).
 
