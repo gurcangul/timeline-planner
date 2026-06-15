@@ -1,0 +1,141 @@
+/**
+ * Paylaşılan modal primitive'leri — tüm modallar (Assign / Export / Stat / Confirm)
+ * bu sınıfları kullanır. Modal'a özel yerleşim her bileşenin kendi modülündedir.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--c-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: var(--sp-5);
+}
+
+.card {
+  background: var(--c-surface);
+  border-radius: var(--r-xl);
+  max-width: 100%;
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-modal);
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--sp-4);
+}
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--c-text);
+  margin-top: 2px;
+}
+
+.closeBtn {
+  border: none;
+  background: var(--c-border-faint);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-sm);
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--c-text-soft);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-soft);
+  margin: 12px 0 var(--sp-2);
+}
+
+.input {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  color: var(--c-text);
+}
+
+.dateInput {
+  flex: 1;
+  padding: var(--sp-3) 10px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+
+.presetRow {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.presetBtn {
+  padding: var(--sp-1) 10px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-pill);
+  font-size: 11.5px;
+  background: var(--c-surface-muted);
+  cursor: pointer;
+  color: var(--c-text-soft);
+  font-weight: 600;
+}
+/* Aktif preset rengi türe göre değişir → --preset-active-bg ile verilir */
+.presetBtnActive {
+  background: var(--preset-active-bg, var(--c-primary));
+  border-color: var(--preset-active-bg, var(--c-primary));
+  color: #fff;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: var(--sp-5);
+}
+
+.ghostBtn {
+  padding: var(--sp-3) 15px;
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--c-text-soft);
+}
+
+.primaryBtn {
+  padding: var(--sp-3) 17px;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  /* arka plan modal'a göre --primary-bg ile verilir */
+  background: var(--primary-bg, var(--c-primary));
+}
+.primaryBtn:disabled {
+  opacity: 0.45;
+}

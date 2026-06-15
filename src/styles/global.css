@@ -1,3 +1,5 @@
+@import "./tokens.css";
+
 *,
 *::before,
 *::after {
@@ -8,29 +10,12 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: var(--font-sans);
+  color: var(--c-text);
+  background: var(--c-bg);
 }
 
-.seg--movable:hover {
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.14);
-  z-index: 2;
-}
-
-.seg--movable:active {
-  cursor: grabbing !important;
-}
-
-.seg__handle:hover {
-  background: rgba(15, 23, 42, 0.08);
-}
-
-button:focus-visible,
-.seg:focus-visible {
-  outline: 2px solid #4f46e5;
+button:focus-visible {
+  outline: 2px solid var(--c-primary);
   outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .seg {
-    transition: box-shadow 0.12s ease;
-  }
 }

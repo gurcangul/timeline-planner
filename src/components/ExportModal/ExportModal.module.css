@@ -1,0 +1,95 @@
+.card {
+  composes: card from "../../styles/modalBase.module.css";
+  width: 440px;
+}
+
+.dateRow {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.dash {
+  color: var(--c-text-faint);
+}
+
+.presetRow {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.listHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--sp-5);
+  margin-bottom: var(--sp-2);
+}
+.listHeadLabel {
+  margin: 0;
+}
+
+.toggleAllBtn {
+  border: none;
+  background: none;
+  font-size: 11.5px;
+  color: var(--c-primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empList {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+}
+
+.empRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--c-border-faint);
+}
+.empRowChecked {
+  background: var(--c-border-faint);
+}
+
+.checkbox {
+  accent-color: var(--c-primary);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: var(--r-sm);
+  background: var(--c-avatar-bg);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.empName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+.empTitle {
+  font-size: 11px;
+  color: var(--c-text-faint);
+}
+
+.summary {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--c-text-muted);
+  text-align: center;
+  font-weight: 500;
+}

@@ -1,0 +1,86 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navBtn {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.navBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.navLabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-text);
+  min-width: 240px;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.secondaryBtn {
+  padding: var(--sp-3) 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--c-text-soft);
+}
+
+.primaryBtn {
+  padding: var(--sp-3) var(--sp-5);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+}
+
+.scroll {
+  overflow: auto;
+  max-height: 75vh;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  background: var(--c-surface);
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+/* width veri-bağımlı (LEFT_W + visibleSlots*SLOT_W) → inline gelir.
+   minWidth:100% geniş ekranda boşluk bırakmamak için. */
+.inner {
+  min-width: 100%;
+  position: relative;
+}

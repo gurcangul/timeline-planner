@@ -10,6 +10,7 @@ import { ExportModal } from "@/components/ExportModal";
 import { StatModal } from "@/components/StatModal";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import type { Assignment } from "@/types";
+import styles from "./PlannerGrid.module.css";
 
 const MAX_WEEKS = 104;
 const TOTAL_DAYS = MAX_WEEKS * DAYS_PER_WEEK;
@@ -128,47 +129,35 @@ export function PlannerGrid() {
   return (
     <div>
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-      <div style={toolbarStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className={styles.toolbar}>
+        <div className={styles.nav}>
           <button
-            style={{ ...navBtnStyle, opacity: canGoBack ? 1 : 0.3 }}
+            className={styles.navBtn}
             disabled={!canGoBack}
             onClick={() => setWeekOffset((w) => Math.max(0, w - 1))}
             title="Önceki hafta"
           >‹</button>
-          <span style={navLabelStyle}>{rangeLabel}</span>
+          <span className={styles.navLabel}>{rangeLabel}</span>
           <button
-            style={{ ...navBtnStyle, opacity: canGoForward ? 1 : 0.3 }}
+            className={styles.navBtn}
             disabled={!canGoForward}
             onClick={() => setWeekOffset((w) => Math.min(maxWeekOffset, w + 1))}
             title="Sonraki hafta"
           >›</button>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button style={secondaryBtnStyle} onClick={() => setShowExport(true)}>
+        <div className={styles.actions}>
+          <button className={styles.secondaryBtn} onClick={() => setShowExport(true)}>
             ⬇ Dışa Aktar
           </button>
-          <button style={primaryBtnStyle} onClick={() => setShowToolbarCreate(true)}>
+          <button className={styles.primaryBtn} onClick={() => setShowToolbarCreate(true)}>
             + Plan Ekle
           </button>
         </div>
       </div>
 
       {/* ── Grid ─────────────────────────────────────────────────────────── */}
-      <div
-        ref={scrollRef}
-        style={{
-          overflow: "auto",
-          maxHeight: "75vh",
-          border: "1px solid #E2E8F0",
-          borderRadius: 14,
-          background: "#fff",
-          boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
-          position: "relative",
-        }}
-      >
-        {/* Inner div fills at least the scroll container so no empty gap on wide screens */}
-        <div style={{ minWidth: "100%", width: LEFT_W + visibleSlots * SLOT_W, position: "relative" }}>
+      <div ref={scrollRef} className={styles.scroll}>
+        <div className={styles.inner} style={{ width: LEFT_W + visibleSlots * SLOT_W }}>
           <GridHeader
             days={visibleDays}
             onHeaderClick={() => setStatTarget("all")}
@@ -278,60 +267,3 @@ export function PlannerGrid() {
     </div>
   );
 }
-
-// ── styles ────────────────────────────────────────────────────────────────────
-
-const toolbarStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: 10,
-  gap: 12,
-  flexWrap: "wrap",
-};
-
-const navBtnStyle: React.CSSProperties = {
-  width: 34,
-  height: 34,
-  border: "1.5px solid #E2E8F0",
-  borderRadius: 9,
-  background: "#fff",
-  fontSize: 20,
-  lineHeight: "1",
-  cursor: "pointer",
-  color: "#0F172A",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontWeight: 700,
-};
-
-const navLabelStyle: React.CSSProperties = {
-  fontSize: 13.5,
-  fontWeight: 600,
-  color: "#0F172A",
-  minWidth: 240,
-  textAlign: "center",
-};
-
-const secondaryBtnStyle: React.CSSProperties = {
-  padding: "8px 14px",
-  border: "1.5px solid #E2E8F0",
-  borderRadius: 9,
-  background: "#fff",
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: "pointer",
-  color: "#475569",
-};
-
-const primaryBtnStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  border: "none",
-  borderRadius: 9,
-  background: "#4F46E5",
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-  color: "#fff",
-};

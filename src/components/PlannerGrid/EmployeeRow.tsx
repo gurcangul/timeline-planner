@@ -1,8 +1,9 @@
-import { DAY_W, ROW_H, LEFT_W, SLOT_W, DAYS_PER_WEEK } from "@/constants";
+import { DAY_W, ROW_H, SLOT_W, DAYS_PER_WEEK } from "@/constants";
 import { getInitials, isWeekend } from "@/utils/date";
 import { computeLanes } from "@/engine/pushEngine";
 import { SegmentBar } from "./SegmentBar";
 import type { Assignment, SelectionRange } from "@/types";
+import styles from "./EmployeeRow.module.css";
 
 interface Props {
   employeeId: string;
@@ -49,42 +50,32 @@ export function EmployeeRow({
 
   const laneMap = computeLanes(visibleSegs);
   const maxLane = visibleSegs.length > 0 ? Math.max(...laneMap.values()) : 0;
-  const totalLanes = maxLane + 1;
-  const rowHeight = totalLanes * ROW_H;
-
+  const rowHeight = (maxLane + 1) * ROW_H;
   const trackWidth = visibleSlots * SLOT_W;
 
   return (
     <div
-      style={{
-        display: "flex",
-        minHeight: rowHeight,
-        borderBottom: "1px solid #F1F5F9",
-        background: striped ? "#FBFCFE" : "#FFFFFF",
-      }}
+      className={`${styles.row} ${striped ? styles.striped : ""}`}
+      style={{ minHeight: rowHeight }}
     >
       {/* Sticky employee panel */}
       <div
-        style={{ ...leftPanelStyle, minHeight: rowHeight, cursor: "pointer" }}
+        className={styles.leftPanel}
+        style={{ minHeight: rowHeight }}
         onClick={() => onEmployeeClick(employeeId)}
         title="İstatistikleri gör"
       >
-        <div style={avatarStyle}>{getInitials(name)}</div>
-        <div style={{ minWidth: 0 }}>
-          <div style={nameStyle}>{name}</div>
-          <div style={titleStyle}>{title}</div>
+        <div className={styles.avatar}>{getInitials(name)}</div>
+        <div className={styles.identity}>
+          <div className={styles.name}>{name}</div>
+          <div className={styles.title}>{title}</div>
         </div>
       </div>
 
       {/* Track */}
       <div
-        style={{
-          position: "relative",
-          width: trackWidth,
-          minHeight: rowHeight,
-          touchAction: "none",
-          overflow: "hidden", // wide bars / preview must never overflow the viewport
-        }}
+        className={styles.track}
+        style={{ width: trackWidth, minHeight: rowHeight }}
         onPointerDown={onTrackPointerDown}
       >
         {/* Day columns */}
@@ -94,31 +85,14 @@ export function EmployeeRow({
           return (
             <div
               key={i}
-              style={{
-                position: "absolute",
-                top: 0,
-                bottom: 0,
-                left: i * DAY_W,
-                width: DAY_W,
-                borderRight: "1px solid #EEF2F6",
-                boxSizing: "border-box",
-                background: weekend
-                  ? striped ? "rgba(0,0,0,0.028)" : "rgba(0,0,0,0.018)"
-                  : "transparent",
-                ...(isWeekStart ? { borderLeft: "2px solid #CBD5E1" } : {}),
-              }}
+              className={[
+                styles.dayCol,
+                weekend ? styles.weekend : "",
+                isWeekStart ? styles.weekStart : "",
+              ].filter(Boolean).join(" ")}
+              style={{ left: i * DAY_W }}
             >
-              {/* AM/PM half-day divider */}
-              <span
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  bottom: 0,
-                  left: SLOT_W,
-                  width: 1,
-                  background: "#F4F7FA",
-                }}
-              />
+              <span className={styles.halfDivider} />
             </div>
           );
         })}
@@ -126,16 +100,10 @@ export function EmployeeRow({
         {/* Selection overlay */}
         {selection && (
           <div
+            className={styles.selection}
             style={{
-              position: "absolute",
-              top: 4,
-              bottom: 4,
               left: (Math.min(selection.a, selection.b) - viewStartSlot) * SLOT_W,
               width: Math.abs(selection.b - selection.a) * SLOT_W,
-              background: "rgba(79,70,229,0.12)",
-              border: "1.5px dashed #4F46E5",
-              borderRadius: 8,
-              pointerEvents: "none",
             }}
           />
         )}
@@ -171,47 +139,3 @@ export function EmployeeRow({
     </div>
   );
 }
-
-const leftPanelStyle: React.CSSProperties = {
-  width: LEFT_W,
-  minWidth: LEFT_W,
-  position: "sticky",
-  left: 0,
-  zIndex: 4,
-  background: "inherit",
-  borderRight: "1px solid #E2E8F0",
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 11,
-  padding: "11px 16px",
-  boxSizing: "border-box",
-};
-
-const avatarStyle: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  minWidth: 32,
-  borderRadius: 9,
-  background: "#1E293B",
-  color: "#fff",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: 11.5,
-  fontWeight: 700,
-  flexShrink: 0,
-};
-
-const nameStyle: React.CSSProperties = {
-  fontSize: 13.5,
-  fontWeight: 600,
-  color: "#0F172A",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: 11.5,
-  color: "#94A3B8",
-};

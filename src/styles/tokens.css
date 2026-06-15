@@ -1,0 +1,68 @@
+/**
+ * Tasarım token'ları — tüm renk, boşluk, radius, gölge ve tipografi değerlerinin
+ * tek kaynağı. Bileşenler bu değişkenleri kullanır; sabit hex/px dağıtmayız.
+ */
+
+:root {
+  /* ── Renk paleti ─────────────────────────────────────────────────────── */
+  --c-bg: #f1f5f9;
+  --c-surface: #ffffff;
+  --c-surface-muted: #f8fafc;
+  --c-surface-striped: #fbfcfe;
+
+  --c-text: #0f172a;
+  --c-text-soft: #475569;
+  --c-text-muted: #64748b;
+  --c-text-faint: #94a3b8;
+
+  --c-border: #e2e8f0;
+  --c-border-soft: #eef2f6;
+  --c-border-faint: #f1f5f9;
+  --c-week-separator: #cbd5e1;
+
+  --c-primary: #4f46e5;
+  --c-primary-soft: #eef0ff;
+  --c-accent: #0d9488;
+  --c-danger: #e11d48;
+  --c-danger-soft: #fce5ea;
+
+  --c-avatar-bg: #1e293b;
+  --c-weekend-bg: #f1f2f6;
+  --c-overlay: rgba(15, 23, 42, 0.45);
+
+  /* ── Aktivite türü renkleri (constants/index.ts ile eşleşir) ─────────── */
+  --c-type-takip: #4f46e5;
+  --c-type-sube: #0d9488;
+  --c-type-izin: #d97706;
+  --c-type-saglik: #e11d48;
+  --c-type-diger: #7c3aed;
+
+  /* ── Boşluk ölçeği ───────────────────────────────────────────────────── */
+  --sp-1: 4px;
+  --sp-2: 6px;
+  --sp-3: 8px;
+  --sp-4: 11px;
+  --sp-5: 16px;
+  --sp-6: 22px;
+
+  /* ── Radius ──────────────────────────────────────────────────────────── */
+  --r-sm: 7px;
+  --r-md: 9px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-pill: 20px;
+
+  /* ── Gölge ───────────────────────────────────────────────────────────── */
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-modal: 0 24px 60px rgba(15, 23, 42, 0.3);
+  --shadow-bar-hover: 0 4px 12px rgba(15, 23, 42, 0.14);
+
+  /* ── Tipografi ───────────────────────────────────────────────────────── */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  /* ── Izgara ölçüleri (constants/index.ts ile eşleşir) ────────────────── */
+  --left-w: 190px;
+  --row-h: 38px;
+  --header-h: 58px;
+}
