@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState, useEffect } from "react";
+import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import { EMPLOYEES, LEFT_W, SLOT_W, DAY_W, DAYS_PER_WEEK, SLOTS_PER_WEEK, SLOTS_PER_DAY } from "@/constants";
 import { buildWorkingDays, TR_MONTH_NAMES } from "@/utils/date";
 import { useAssignments } from "@/hooks/useAssignments";
@@ -59,6 +59,21 @@ export function PlannerGrid() {
   const visibleSlots  = visibleDayCount * SLOTS_PER_DAY;
   const totalSlots    = MAX_WEEKS * SLOTS_PER_WEEK;
 
+  const maxWeekOffset = Math.max(
+    0,
+    Math.ceil((TOTAL_DAYS - visibleDayCount) / DAYS_PER_WEEK)
+  );
+  const canGoBack    = weekOffset > 0;
+  const canGoForward = weekOffset < maxWeekOffset;
+
+  // Drag edge auto-paging: shift one week, clamped to bounds.
+  const pageBy = useCallback(
+    (dir: -1 | 1) => {
+      setWeekOffset((w) => Math.min(maxWeekOffset, Math.max(0, w + dir)));
+    },
+    [maxWeekOffset]
+  );
+
   const {
     assignments,
     getRowSegments,
@@ -75,19 +90,13 @@ export function PlannerGrid() {
       viewStartSlot,
       scrollContainerRef: scrollRef,
       commitRow,
+      onEdgeReached: pageBy,
     });
 
   const getDisplaySegments = (employeeId: string) => {
     if (preview?.employeeId === employeeId) return preview.segments;
     return getRowSegments(employeeId);
   };
-
-  const maxWeekOffset = Math.max(
-    0,
-    Math.ceil((TOTAL_DAYS - visibleDayCount) / DAYS_PER_WEEK)
-  );
-  const canGoBack    = weekOffset > 0;
-  const canGoForward = weekOffset < maxWeekOffset;
 
   const rangeLabel = (() => {
     const first = visibleDays[0];
