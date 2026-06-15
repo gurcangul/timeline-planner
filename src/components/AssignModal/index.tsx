@@ -8,6 +8,8 @@ import {
   fromInputDateString,
 } from "@/utils/date";
 import type { Assignment, ModalContext } from "@/types";
+import base from "@/styles/modalBase.module.css";
+import styles from "./AssignModal.module.css";
 
 export interface SaveData {
   employeeId: string;
@@ -108,30 +110,30 @@ export function AssignModal(props: Props) {
   const title = isEdit ? "ATAMA DÜZENLE" : "YENİ ATAMA";
 
   return (
-    <div style={overlayStyle} onPointerDown={onClose}>
-      <div style={modalStyle} onPointerDown={(e) => e.stopPropagation()}>
+    <div className={base.overlay} onPointerDown={onClose}>
+      <div className={styles.card} onPointerDown={(e) => e.stopPropagation()}>
 
         {/* Header */}
-        <div style={headerStyle}>
-          <div style={kickerStyle}>{title}</div>
-          <div style={{ display: "flex", gap: 8 }}>
+        <div className={styles.header}>
+          <div className={base.kicker}>{title}</div>
+          <div className={styles.headerActions}>
             {isEdit && (
-              <button style={deleteBtnStyle}
+              <button className={styles.deleteBtn}
                 onClick={() => { (props as EditProps).onDelete(); onClose(); }}
                 title="Atamayı sil">🗑</button>
             )}
-            <button style={closeBtnStyle} onClick={onClose}>×</button>
+            <button className={base.closeBtn} onClick={onClose}>×</button>
           </div>
         </div>
 
         {/* Employee selector — only in toolbar mode */}
         {isToolbar && (
           <>
-            <label style={fieldLabel}>Denetçi</label>
+            <label className={base.fieldLabel}>Denetçi</label>
             <select
               value={employeeId}
               onChange={(e) => { setEmployeeId(e.target.value); setHasError(false); }}
-              style={inputStyle}
+              className={base.input}
             >
               <option value="">— Seçiniz —</option>
               {EMPLOYEES.map((e) => (
@@ -142,27 +144,27 @@ export function AssignModal(props: Props) {
         )}
 
         {/* Date range */}
-        <div style={dateRow}>
-          <div style={datePicker}>
-            <label style={fieldLabel}>Başlangıç</label>
-            <div style={dateInputRow}>
+        <div className={styles.dateRow}>
+          <div className={styles.datePicker}>
+            <label className={base.fieldLabel}>Başlangıç</label>
+            <div className={styles.dateInputRow}>
               <input type="date" value={startDateStr} min={minDate} max={maxDate}
                 onChange={(e) => { setStartDateStr(e.target.value); setHasError(false); }}
-                style={dateInputStyle} />
-              <select value={startHalf} onChange={(e) => setStartHalf(e.target.value as "am" | "pm")} style={halfSel}>
+                className={styles.dateInput} />
+              <select value={startHalf} onChange={(e) => setStartHalf(e.target.value as "am" | "pm")} className={styles.halfSel}>
                 <option value="am">ÖÖ</option>
                 <option value="pm">ÖS</option>
               </select>
             </div>
           </div>
-          <div style={{ fontSize: 18, color: "#94A3B8", paddingTop: 22 }}>→</div>
-          <div style={datePicker}>
-            <label style={fieldLabel}>Bitiş</label>
-            <div style={dateInputRow}>
+          <div className={styles.arrow}>→</div>
+          <div className={styles.datePicker}>
+            <label className={base.fieldLabel}>Bitiş</label>
+            <div className={styles.dateInputRow}>
               <input type="date" value={endDateStr} min={startDateStr || minDate} max={maxDate}
                 onChange={(e) => { setEndDateStr(e.target.value); setHasError(false); }}
-                style={dateInputStyle} />
-              <select value={endHalf} onChange={(e) => setEndHalf(e.target.value as "am" | "pm")} style={halfSel}>
+                className={styles.dateInput} />
+              <select value={endHalf} onChange={(e) => setEndHalf(e.target.value as "am" | "pm")} className={styles.halfSel}>
                 <option value="am">ÖÖ</option>
                 <option value="pm">ÖS</option>
               </select>
@@ -171,20 +173,23 @@ export function AssignModal(props: Props) {
         </div>
 
         {slots === null && startDateStr && endDateStr && (
-          <div style={errorNote}>Bitiş başlangıçtan önce olamaz.</div>
+          <div className={styles.errorNote}>Bitiş başlangıçtan önce olamaz.</div>
         )}
 
         {/* Activity type */}
-        <label style={fieldLabel}>Aktivite türü</label>
-        <div style={typeGrid}>
+        <label className={base.fieldLabel}>Aktivite türü</label>
+        <div className={styles.typeGrid}>
           {ACTIVITY_TYPE_LIST.map((type) => {
             const sel = typeId === type.id;
             return (
               <button key={type.id}
                 onClick={() => { setTypeId(type.id); setHasError(false); }}
-                style={{ ...typeBtn, borderColor: sel ? type.color : "#E2E8F0",
-                  background: sel ? type.softColor : "#fff", color: sel ? type.color : "#475569" }}>
-                <span style={{ ...swatch, background: type.color }} />
+                className={`${styles.typeBtn} ${sel ? styles.typeBtnSelected : ""}`}
+                style={{
+                  ["--type-color" as string]: type.color,
+                  ["--type-soft" as string]: type.softColor,
+                }}>
+                <span className={styles.swatch} />
                 {type.label}{type.pinned && " 🔒"}
               </button>
             );
@@ -193,38 +198,38 @@ export function AssignModal(props: Props) {
 
         {typeId === "sube" ? (
           <>
-            <label style={fieldLabel}>Şube</label>
-            <select value={branch} onChange={(e) => setBranch(e.target.value)} style={inputStyle}>
+            <label className={base.fieldLabel}>Şube</label>
+            <select value={branch} onChange={(e) => setBranch(e.target.value)} className={base.input}>
               {BRANCHES.map((b) => <option key={b}>{b}</option>)}
             </select>
           </>
         ) : typeId === "diger" ? (
           <>
-            <label style={fieldLabel}>
-              Açıklama <span style={{ color: "#E11D48", marginLeft: 2 }}>*</span>
+            <label className={base.fieldLabel}>
+              Açıklama <span className={styles.req}>*</span>
             </label>
             <input
               value={label}
               onChange={(e) => { setLabel(e.target.value); setHasError(false); }}
               placeholder="Ne yapılıyor? (zorunlu)"
-              style={{ ...inputStyle, borderColor: hasError && !label.trim() ? "#E11D48" : "#E2E8F0" }}
+              className={`${base.input} ${hasError && !label.trim() ? styles.inputError : ""}`}
             />
           </>
         ) : (
           <>
-            <label style={fieldLabel}>Açıklama (opsiyonel)</label>
+            <label className={base.fieldLabel}>Açıklama (opsiyonel)</label>
             <input value={label} onChange={(e) => setLabel(e.target.value)}
-              placeholder={activeType.short} style={inputStyle} />
+              placeholder={activeType.short} className={base.input} />
           </>
         )}
 
         {activeType.pinned && (
-          <div style={pinNote}>
+          <div className={styles.pinNote}>
             Bu tür sabit çapadır — eklendikten sonra kaydırılamaz, diğer planlar etrafından akar.
           </div>
         )}
         {hasError && (
-          <div style={errorNote}>
+          <div className={styles.errorNote}>
             {isToolbar && !employeeId
               ? "Lütfen bir denetçi seçin."
               : typeId === "diger" && !label.trim()
@@ -233,10 +238,11 @@ export function AssignModal(props: Props) {
           </div>
         )}
 
-        <div style={footer}>
-          <button style={ghostBtn} onClick={onClose}>Vazgeç</button>
-          <button style={{ ...primaryBtn, background: activeType.color,
-            opacity: (!isToolbar || employeeId) && slots !== null ? 1 : 0.45 }}
+        <div className={base.footer}>
+          <button className={base.ghostBtn} onClick={onClose}>Vazgeç</button>
+          <button
+            className={base.primaryBtn}
+            style={{ ["--primary-bg" as string]: activeType.color }}
             onClick={handleSave}
             disabled={(!isToolbar || !!employeeId) && slots === null}>
             {isEdit ? "Değişiklikleri kaydet" : "Atamayı kaydet"}
@@ -246,80 +252,3 @@ export function AssignModal(props: Props) {
     </div>
   );
 }
-
-// ── styles ──────────────────────────────────────────────────────────────────
-
-const overlayStyle: React.CSSProperties = {
-  position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)",
-  display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20,
-};
-const modalStyle: React.CSSProperties = {
-  background: "#fff", borderRadius: 16, width: 470, maxWidth: "100%",
-  padding: 22, boxShadow: "0 24px 60px rgba(15,23,42,0.3)", boxSizing: "border-box",
-};
-const headerStyle: React.CSSProperties = {
-  display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12,
-};
-const kickerStyle: React.CSSProperties = {
-  fontSize: 11, letterSpacing: "0.12em", fontWeight: 700, color: "#64748B",
-};
-const closeBtnStyle: React.CSSProperties = {
-  border: "none", background: "#F1F5F9", width: 30, height: 30,
-  borderRadius: 8, fontSize: 18, cursor: "pointer", color: "#475569",
-};
-const deleteBtnStyle: React.CSSProperties = {
-  border: "none", background: "#FEE2E2", width: 30, height: 30,
-  borderRadius: 8, fontSize: 14, cursor: "pointer", color: "#B91C1C",
-  display: "flex", alignItems: "center", justifyContent: "center",
-};
-const dateRow: React.CSSProperties = {
-  display: "flex", alignItems: "flex-end", gap: 8, marginBottom: 4,
-};
-const datePicker: React.CSSProperties = { flex: 1, minWidth: 0 };
-const dateInputRow: React.CSSProperties = { display: "flex", gap: 4 };
-const dateInputStyle: React.CSSProperties = {
-  flex: 1, padding: "8px 8px", border: "1.5px solid #E2E8F0", borderRadius: 8,
-  fontSize: 12.5, boxSizing: "border-box", minWidth: 0,
-  fontFamily: "Inter,-apple-system,sans-serif", color: "#0F172A",
-};
-const halfSel: React.CSSProperties = {
-  padding: "8px 5px", border: "1.5px solid #E2E8F0", borderRadius: 8,
-  fontSize: 12, cursor: "pointer", background: "#F8FAFC", color: "#475569", fontWeight: 600,
-};
-const fieldLabel: React.CSSProperties = {
-  display: "block", fontSize: 12, fontWeight: 600, color: "#475569", margin: "12px 0 6px",
-};
-const typeGrid: React.CSSProperties = {
-  display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8,
-};
-const typeBtn: React.CSSProperties = {
-  display: "flex", alignItems: "center", gap: 8, padding: "9px 11px",
-  border: "1.5px solid", borderRadius: 10, fontSize: 12, fontWeight: 600,
-  cursor: "pointer", textAlign: "left", background: "#fff",
-};
-const swatch: React.CSSProperties = {
-  width: 11, height: 11, borderRadius: 3, display: "inline-block", flexShrink: 0,
-};
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "9px 11px", border: "1.5px solid #E2E8F0", borderRadius: 10,
-  fontSize: 13, boxSizing: "border-box", fontFamily: "Inter,-apple-system,sans-serif",
-};
-const pinNote: React.CSSProperties = {
-  marginTop: 10, fontSize: 12, color: "#B45309", background: "#FEF3E2",
-  padding: "8px 12px", borderRadius: 9, lineHeight: 1.45,
-};
-const errorNote: React.CSSProperties = {
-  marginTop: 8, fontSize: 12, color: "#BE123C", background: "#FCE5EA",
-  padding: "8px 12px", borderRadius: 9, lineHeight: 1.45,
-};
-const footer: React.CSSProperties = {
-  display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18,
-};
-const ghostBtn: React.CSSProperties = {
-  padding: "9px 15px", border: "1.5px solid #E2E8F0", background: "#fff",
-  borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", color: "#475569",
-};
-const primaryBtn: React.CSSProperties = {
-  padding: "9px 17px", border: "none", borderRadius: 10,
-  fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#fff",
-};

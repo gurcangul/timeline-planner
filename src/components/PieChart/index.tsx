@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from "./PieChart.module.css";
 
 interface Slice {
   label: string;
@@ -24,7 +25,7 @@ export function PieChart({ slices, size = 150 }: Props) {
   const total = slices.reduce((s, c) => s + c.value, 0);
   if (total === 0) {
     return (
-      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", color: "#94A3B8", fontSize: 12 }}>
+      <div className={styles.empty} style={{ width: size, height: size }}>
         Veri yok
       </div>
     );
@@ -63,7 +64,7 @@ export function PieChart({ slices, size = 150 }: Props) {
       <svg
         width={size}
         height={size}
-        style={{ display: "block" }}
+        className={styles.svg}
         onMouseLeave={() => setTooltip(null)}
       >
         {paths.map((p) => (
@@ -71,9 +72,7 @@ export function PieChart({ slices, size = 150 }: Props) {
             key={p.label}
             d={p.d}
             fill={p.color}
-            stroke="#fff"
-            strokeWidth={tooltip?.label === p.label ? 3 : 2}
-            style={{ cursor: "default", transition: "stroke-width 80ms" }}
+            className={`${styles.slice} ${tooltip?.label === p.label ? styles.sliceActive : ""}`}
             onMouseEnter={(e) =>
               setTooltip({ label: p.label, pct: p.pct, x: e.clientX, y: e.clientY })
             }
@@ -87,29 +86,9 @@ export function PieChart({ slices, size = 150 }: Props) {
 
       {/* Fixed-position tooltip — escapes overflow:hidden parents */}
       {tooltip && (
-        <div
-          style={{
-            position: "fixed",
-            left: tooltip.x,
-            top: tooltip.y - 46,
-            transform: "translateX(-50%)",
-            pointerEvents: "none",
-            zIndex: 9999,
-            background: "rgba(15,23,42,0.88)",
-            color: "#fff",
-            borderRadius: 8,
-            padding: "5px 11px",
-            fontSize: 12.5,
-            fontWeight: 500,
-            whiteSpace: "nowrap",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
-            lineHeight: 1.4,
-          }}
-        >
+        <div className={styles.tooltip} style={{ left: tooltip.x, top: tooltip.y - 46 }}>
           {tooltip.label}
-          <span style={{ marginLeft: 7, fontWeight: 800, fontSize: 13.5 }}>
-            {tooltip.pct}%
-          </span>
+          <span className={styles.tooltipPct}>{tooltip.pct}%</span>
         </div>
       )}
     </>

@@ -1,0 +1,47 @@
+/* width/height (size) ve konum veri-bağımlıdır → inline gelir. */
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-faint);
+  font-size: 12px;
+}
+
+.svg {
+  display: block;
+}
+
+.slice {
+  cursor: default;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.sliceActive {
+  stroke-width: 3;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .slice {
+    transition: stroke-width 80ms;
+  }
+}
+
+.tooltip {
+  position: fixed;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.88);
+  color: #fff;
+  border-radius: var(--r-sm);
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  line-height: 1.4;
+}
+.tooltipPct {
+  margin-left: 7px;
+  font-weight: 800;
+  font-size: 13.5px;
+}
