@@ -1,5 +1,5 @@
 import { useRef, useMemo, useState, useEffect } from "react";
-import { EMPLOYEES, LEFT_W, SLOT_W, DAYS_PER_WEEK, SLOTS_PER_WEEK } from "@/constants";
+import { EMPLOYEES, LEFT_W, SLOT_W, DAY_W, DAYS_PER_WEEK, SLOTS_PER_WEEK, SLOTS_PER_DAY } from "@/constants";
 import { buildWorkingDays, TR_MONTH_NAMES } from "@/utils/date";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useDragInteraction } from "@/hooks/useDragInteraction";
@@ -10,8 +10,9 @@ import { ExportModal } from "@/components/ExportModal";
 import { StatModal } from "@/components/StatModal";
 import type { Assignment } from "@/types";
 
-const MIN_VISIBLE_WEEKS = 2;
 const MAX_WEEKS = 104;
+const TOTAL_DAYS = MAX_WEEKS * DAYS_PER_WEEK;
+const MIN_VISIBLE_DAYS = DAYS_PER_WEEK; // at least one full week
 
 export function PlannerGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -32,9 +33,10 @@ export function PlannerGrid() {
     return () => ro.disconnect();
   }, []);
 
-  const visibleWeeks = useMemo(() => {
+  // Fill the available width with as many whole DAYS as fit (not just whole weeks).
+  const visibleDayCount = useMemo(() => {
     const available = containerWidth - LEFT_W;
-    return Math.max(MIN_VISIBLE_WEEKS, Math.floor(available / (SLOTS_PER_WEEK * SLOT_W)));
+    return Math.max(MIN_VISIBLE_DAYS, Math.floor(available / DAY_W));
   }, [containerWidth]);
 
   // Modal states
@@ -45,16 +47,16 @@ export function PlannerGrid() {
 
   const allWorkingDays = useMemo(() => buildWorkingDays(MAX_WEEKS, 0), []);
 
+  // Navigation moves by whole weeks, but the visible window is day-granular
+  // so wide screens fill completely instead of leaving a sub-week gap.
+  const startDay = weekOffset * DAYS_PER_WEEK;
   const visibleDays = useMemo(
-    () => allWorkingDays.slice(
-      weekOffset * DAYS_PER_WEEK,
-      (weekOffset + visibleWeeks) * DAYS_PER_WEEK
-    ),
-    [allWorkingDays, weekOffset, visibleWeeks]
+    () => allWorkingDays.slice(startDay, startDay + visibleDayCount),
+    [allWorkingDays, startDay, visibleDayCount]
   );
 
   const viewStartSlot = weekOffset * SLOTS_PER_WEEK;
-  const visibleSlots  = visibleWeeks * SLOTS_PER_WEEK;
+  const visibleSlots  = visibleDayCount * SLOTS_PER_DAY;
   const totalSlots    = MAX_WEEKS * SLOTS_PER_WEEK;
 
   const {
@@ -80,8 +82,12 @@ export function PlannerGrid() {
     return getRowSegments(employeeId);
   };
 
+  const maxWeekOffset = Math.max(
+    0,
+    Math.ceil((TOTAL_DAYS - visibleDayCount) / DAYS_PER_WEEK)
+  );
   const canGoBack    = weekOffset > 0;
-  const canGoForward = weekOffset + visibleWeeks < MAX_WEEKS;
+  const canGoForward = weekOffset < maxWeekOffset;
 
   const rangeLabel = (() => {
     const first = visibleDays[0];
@@ -108,7 +114,7 @@ export function PlannerGrid() {
           <button
             style={{ ...navBtnStyle, opacity: canGoForward ? 1 : 0.3 }}
             disabled={!canGoForward}
-            onClick={() => setWeekOffset((w) => Math.min(MAX_WEEKS - visibleWeeks, w + 1))}
+            onClick={() => setWeekOffset((w) => Math.min(maxWeekOffset, w + 1))}
             title="Sonraki hafta"
           >›</button>
         </div>

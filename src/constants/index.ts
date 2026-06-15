@@ -1,13 +1,16 @@
 import type { ActivityType, Employee } from "@/types";
 
+/** A day is split into two half-day slots (AM / PM). */
+export const SLOTS_PER_DAY = 2;
+export const DAYS_PER_WEEK = 7;
+export const SLOTS_PER_WEEK = DAYS_PER_WEEK * SLOTS_PER_DAY; // 14
+
 export const SLOT_W = 30;
-export const DAY_W = SLOT_W * 2;
+export const DAY_W = SLOT_W * SLOTS_PER_DAY;
 export const ROW_H = 38;
 export const HEADER_H = 58;
-export const LEFT_W = 232;
+export const LEFT_W = 190;
 export const DEFAULT_WEEKS = 4;
-export const DAYS_PER_WEEK = 7;
-export const SLOTS_PER_WEEK = DAYS_PER_WEEK * 2; // 14
 
 export const ACTIVITY_TYPES: Record<string, ActivityType> = {
   takip: {

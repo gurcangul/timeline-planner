@@ -12,6 +12,20 @@ interface CreateParams {
   label: string;
 }
 
+const isPinned = (typeId: string): boolean => ACTIVITY_TYPES[typeId]?.pinned ?? false;
+
+/**
+ * Pinned activities (izin / sağlık) are hard anchors: nothing may overlap them,
+ * and a pinned activity may not overlap anything. Non-pinned activities may
+ * freely stack on each other. `rowSegs` must exclude the candidate itself.
+ */
+function wouldConflict(rowSegs: Assignment[], candidate: Assignment): boolean {
+  if (isPinned(candidate.typeId)) {
+    return rowSegs.some((s) => slotsOverlap(s, candidate));
+  }
+  return rowSegs.some((s) => isPinned(s.typeId) && slotsOverlap(s, candidate));
+}
+
 export function useAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>(SEED_ASSIGNMENTS);
 
@@ -30,21 +44,11 @@ export function useAssignments() {
 
   const createAssignment = useCallback(
     (params: CreateParams): boolean => {
-      const newSeg: Assignment = { id: nextId(), ...params };
+      const candidate: Assignment = { id: nextId(), ...params };
       const rowSegs = assignments.filter((s) => s.employeeId === params.employeeId);
+      if (wouldConflict(rowSegs, candidate)) return false;
 
-      // Pinned segments are hard anchors — nothing may overlap them
-      const pinnedConflict = rowSegs.some(
-        (s) => ACTIVITY_TYPES[s.typeId]?.pinned && slotsOverlap(s, newSeg)
-      );
-      if (pinnedConflict) return false;
-
-      // A new pinned segment may not overlap anything
-      if (ACTIVITY_TYPES[params.typeId]?.pinned) {
-        if (rowSegs.some((s) => slotsOverlap(s, newSeg))) return false;
-      }
-
-      setAssignments((prev) => [...prev, newSeg]);
+      setAssignments((prev) => [...prev, candidate]);
       return true;
     },
     [assignments]
@@ -55,21 +59,13 @@ export function useAssignments() {
       const existing = assignments.find((s) => s.id === id);
       if (!existing) return false;
 
-      const updated: Assignment = { ...existing, ...params };
+      const candidate: Assignment = { ...existing, ...params };
       const rowSegs = assignments.filter(
         (s) => s.employeeId === existing.employeeId && s.id !== id
       );
+      if (wouldConflict(rowSegs, candidate)) return false;
 
-      const pinnedConflict = rowSegs.some(
-        (s) => ACTIVITY_TYPES[s.typeId]?.pinned && slotsOverlap(s, updated)
-      );
-      if (pinnedConflict) return false;
-
-      if (ACTIVITY_TYPES[params.typeId]?.pinned) {
-        if (rowSegs.some((s) => slotsOverlap(s, updated))) return false;
-      }
-
-      setAssignments((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      setAssignments((prev) => prev.map((s) => (s.id === id ? candidate : s)));
       return true;
     },
     [assignments]

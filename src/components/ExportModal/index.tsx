@@ -1,6 +1,13 @@
 import { useState, useMemo } from "react";
 import { EMPLOYEES } from "@/constants";
-import { toInputDateString, fromInputDateString, dateAndHalfToSlot } from "@/utils/date";
+import {
+  toInputDateString,
+  slotRangeFromInputs,
+  getInitials,
+  monthRange,
+  quarterRange,
+  yearRange,
+} from "@/utils/date";
 import { exportToXlsx } from "@/utils/export";
 import type { Assignment } from "@/types";
 
@@ -12,11 +19,10 @@ interface Props {
 
 export function ExportModal({ assignments, allDays, onClose }: Props) {
   const today = new Date();
-  const defaultStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const initial = monthRange(today);
 
-  const [startStr, setStartStr] = useState(toInputDateString(defaultStart));
-  const [endStr, setEndStr] = useState(toInputDateString(defaultEnd));
+  const [startStr, setStartStr] = useState(toInputDateString(initial.start));
+  const [endStr, setEndStr] = useState(toInputDateString(initial.end));
   const [selected, setSelected] = useState<Set<string>>(
     new Set(EMPLOYEES.map((e) => e.id))
   );
@@ -24,13 +30,10 @@ export function ExportModal({ assignments, allDays, onClose }: Props) {
   const minDate = allDays[0] ? toInputDateString(allDays[0]) : undefined;
   const maxDate = allDays[allDays.length - 1] ? toInputDateString(allDays[allDays.length - 1]!) : undefined;
 
-  const slotRange = useMemo((): [number, number] | null => {
-    if (!startStr || !endStr) return null;
-    const ss = dateAndHalfToSlot(fromInputDateString(startStr), "am", allDays);
-    const es = dateAndHalfToSlot(fromInputDateString(endStr), "pm", allDays);
-    if (ss < 0 || es < 0 || es + 1 <= ss) return null;
-    return [ss, es + 1];
-  }, [startStr, endStr, allDays]);
+  const slotRange = useMemo(
+    () => slotRangeFromInputs(startStr, endStr, allDays),
+    [startStr, endStr, allDays]
+  );
 
   const matchCount = useMemo(() => {
     if (!slotRange) return 0;
@@ -96,9 +99,9 @@ export function ExportModal({ assignments, allDays, onClose }: Props) {
         {/* Quick date presets */}
         <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
           {[
-            { label: "Bu ay", start: new Date(today.getFullYear(), today.getMonth(), 1), end: new Date(today.getFullYear(), today.getMonth() + 1, 0) },
-            { label: "Bu çeyrek", start: new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1), end: new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3 + 3, 0) },
-            { label: "Bu yıl", start: new Date(today.getFullYear(), 0, 1), end: new Date(today.getFullYear(), 11, 31) },
+            { label: "Bu ay", ...monthRange(today) },
+            { label: "Bu çeyrek", ...quarterRange(today) },
+            { label: "Bu yıl", ...yearRange(today) },
           ].map(({ label, start, end }) => (
             <button key={label} style={presetBtn}
               onClick={() => { setStartStr(toInputDateString(start)); setEndStr(toInputDateString(end)); }}>
@@ -121,7 +124,7 @@ export function ExportModal({ assignments, allDays, onClose }: Props) {
               <label key={emp.id} style={{ ...empRow, background: checked ? "#F1F5F9" : "#fff" }}>
                 <input type="checkbox" checked={checked} onChange={() => toggle(emp.id)}
                   style={{ accentColor: "#4F46E5", flexShrink: 0 }} />
-                <span style={avatar}>{emp.name.split(" ").map(w => w[0]).join("")}</span>
+                <span style={avatar}>{getInitials(emp.name)}</span>
                 <span>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{emp.name}</div>
                   <div style={{ fontSize: 11, color: "#94A3B8" }}>{emp.title}</div>

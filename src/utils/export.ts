@@ -1,18 +1,12 @@
 import * as XLSX from "xlsx";
-import { ACTIVITY_TYPES, EMPLOYEES } from "@/constants";
+import { ACTIVITY_TYPES, EMPLOYEES, SLOTS_PER_DAY } from "@/constants";
+import { formatSlotDateTime } from "@/utils/date";
 import type { Assignment } from "@/types";
-
-function slotToDateLabel(slot: number, allDays: Date[]): string {
-  const day = allDays[Math.floor(slot / 2)];
-  if (!day) return "—";
-  const half = slot % 2 === 0 ? "Sabah" : "Öğleden Sonra";
-  return `${day.getDate().toString().padStart(2, "0")}.${(day.getMonth() + 1).toString().padStart(2, "0")}.${day.getFullYear()} ${half}`;
-}
 
 function slotDurationLabel(startSlot: number, endSlot: number): string {
   const total = endSlot - startSlot;
-  const full = Math.floor(total / 2);
-  const half = total % 2;
+  const full = Math.floor(total / SLOTS_PER_DAY);
+  const half = total % SLOTS_PER_DAY;
   const parts: string[] = [];
   if (full > 0) parts.push(`${full} tam gün`);
   if (half > 0) parts.push("½ gün");
@@ -63,8 +57,8 @@ export function exportToXlsx(params: ExportParams, filename = "denetim-plani.xls
       emp?.name ?? a.employeeId,
       emp?.title ?? "",
       type?.label ?? a.typeId,
-      slotToDateLabel(a.startSlot, allDays),
-      slotToDateLabel(a.endSlot - 1, allDays),
+      formatSlotDateTime(a.startSlot, allDays),
+      formatSlotDateTime(a.endSlot - 1, allDays),
       slotDurationLabel(a.startSlot, a.endSlot),
       a.label,
     ];

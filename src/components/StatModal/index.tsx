@@ -1,6 +1,19 @@
 import { useState, useMemo } from "react";
 import { EMPLOYEES, ACTIVITY_TYPES, ACTIVITY_TYPE_LIST } from "@/constants";
-import { toInputDateString, fromInputDateString, dateAndHalfToSlot } from "@/utils/date";
+import {
+  toInputDateString,
+  slotRangeFromInputs,
+  getInitials,
+  monthRange,
+  weekRange,
+  quarterRange,
+} from "@/utils/date";
+import {
+  computeStats,
+  statsToSlices,
+  rangeSlotCount,
+  UNPLANNED_LABEL,
+} from "@/utils/statistics";
 import { PieChart } from "@/components/PieChart";
 import type { Assignment } from "@/types";
 
@@ -12,66 +25,21 @@ interface Props {
   onClose: () => void;
 }
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
-
-function computeStats(
-  assignments: Assignment[],
-  employeeIds: string[],
-  startSlot: number,
-  endSlot: number
-): Map<string, number> {
-  const stats = new Map<string, number>();
-  for (const a of assignments) {
-    if (!employeeIds.includes(a.employeeId)) continue;
-    const s = Math.max(a.startSlot, startSlot);
-    const e = Math.min(a.endSlot, endSlot);
-    if (e <= s) continue;
-    stats.set(a.typeId, (stats.get(a.typeId) ?? 0) + (e - s));
-  }
-  return stats;
-}
-
-function statsToSlices(stats: Map<string, number>, totalSlots: number) {
-  const assigned = Array.from(stats.values()).reduce((a, b) => a + b, 0);
-  const free = Math.max(0, totalSlots - assigned);
-  const slices = ACTIVITY_TYPE_LIST.filter((t) => (stats.get(t.id) ?? 0) > 0).map((t) => ({
-    label: t.label,
-    value: stats.get(t.id) ?? 0,
-    color: t.color,
-  }));
-  if (free > 0) slices.push({ label: "Plansız", value: free, color: "#E2E8F0" });
-  return slices;
-}
-
-function countWorkingSlots(startSlot: number, endSlot: number): number {
-  return Math.max(0, endSlot - startSlot);
-}
-
-// ─── component ───────────────────────────────────────────────────────────────
-
 export function StatModal({ target, assignments, allDays, onClose }: Props) {
   const today = new Date();
-  const [startStr, setStartStr] = useState(
-    toInputDateString(new Date(today.getFullYear(), today.getMonth(), 1))
-  );
-  const [endStr, setEndStr] = useState(
-    toInputDateString(new Date(today.getFullYear(), today.getMonth() + 1, 0))
-  );
+  const initial = monthRange(today);
+  const [startStr, setStartStr] = useState(toInputDateString(initial.start));
+  const [endStr, setEndStr] = useState(toInputDateString(initial.end));
 
   const isAll = target === "all";
   const targetEmployee = isAll ? null : EMPLOYEES.find((e) => e.id === target);
   const employeeIds = isAll ? EMPLOYEES.map((e) => e.id) : [target];
 
-  const slotRange = useMemo((): [number, number] | null => {
-    if (!startStr || !endStr) return null;
-    const rawSs = dateAndHalfToSlot(fromInputDateString(startStr), "am", allDays);
-    const rawEs = dateAndHalfToSlot(fromInputDateString(endStr), "pm", allDays);
-    // Dates before the epoch (current Monday) return -1; clamp start to slot 0.
-    // If end is also before epoch → genuinely no data in range.
-    const ss = rawSs < 0 ? 0 : rawSs;
-    if (rawEs < 0 || rawEs + 1 <= ss) return null;
-    return [ss, rawEs + 1];
-  }, [startStr, endStr, allDays]);
+  // Statistics clamp a pre-epoch start to slot 0 so "this month" still resolves.
+  const slotRange = useMemo(
+    () => slotRangeFromInputs(startStr, endStr, allDays, true),
+    [startStr, endStr, allDays]
+  );
 
   const minDate = allDays[0] ? toInputDateString(allDays[0]) : undefined;
   const maxDate = allDays[allDays.length - 1] ? toInputDateString(allDays[allDays.length - 1]!) : undefined;
@@ -84,7 +52,7 @@ export function StatModal({ target, assignments, allDays, onClose }: Props) {
 
   const singleSlices = useMemo(() => {
     if (!singleStats || !slotRange) return [];
-    return statsToSlices(singleStats, countWorkingSlots(slotRange[0], slotRange[1]));
+    return statsToSlices(singleStats, rangeSlotCount(slotRange[0], slotRange[1]));
   }, [singleStats, slotRange]);
 
   // ── all-employees view ────────────────────────────────────────────────────
@@ -97,9 +65,9 @@ export function StatModal({ target, assignments, allDays, onClose }: Props) {
   }, [isAll, assignments, slotRange]);
 
   const presets = [
-    { label: "Bu hafta", start: (() => { const d = new Date(today); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; })(), end: (() => { const d = new Date(today); d.setDate(d.getDate() + (4 - (d.getDay() + 6) % 7)); return d; })() },
-    { label: "Bu ay", start: new Date(today.getFullYear(), today.getMonth(), 1), end: new Date(today.getFullYear(), today.getMonth() + 1, 0) },
-    { label: "Bu çeyrek", start: new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1), end: new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3 + 3, 0) },
+    { label: "Bu hafta", ...weekRange(today) },
+    { label: "Bu ay", ...monthRange(today) },
+    { label: "Bu çeyrek", ...quarterRange(today) },
   ];
 
   return (
@@ -171,12 +139,12 @@ export function StatModal({ target, assignments, allDays, onClose }: Props) {
           <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
             <div style={allGrid}>
               {allStats.map(({ emp, stats }) => {
-                const slices = statsToSlices(stats, countWorkingSlots(slotRange[0], slotRange[1]));
-                const hasData = slices.some((s) => s.label !== "Plansız" && s.value > 0);
+                const slices = statsToSlices(stats, rangeSlotCount(slotRange[0], slotRange[1]));
+                const hasData = slices.some((s) => s.label !== UNPLANNED_LABEL && s.value > 0);
                 return (
                   <div key={emp.id} style={empCard}>
                     <div style={cardHead}>
-                      <span style={cardAvatar}>{emp.name.split(" ").map(w => w[0]).join("")}</span>
+                      <span style={cardAvatar}>{getInitials(emp.name)}</span>
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: "#0F172A" }}>{emp.name}</div>
                         <div style={{ fontSize: 10.5, color: "#94A3B8" }}>{emp.title}</div>
@@ -187,7 +155,7 @@ export function StatModal({ target, assignments, allDays, onClose }: Props) {
                     </div>
                     {hasData && (
                       <div>
-                        {slices.filter(s => s.label !== "Plansız").map((s) => {
+                        {slices.filter(s => s.label !== UNPLANNED_LABEL).map((s) => {
                           const total = slices.reduce((a, b) => a + b.value, 0);
                           const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
                           return (
