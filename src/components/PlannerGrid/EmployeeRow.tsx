@@ -52,8 +52,7 @@ export function EmployeeRow({
   const totalLanes = maxLane + 1;
   const rowHeight = totalLanes * ROW_H;
 
-  const toVisualLeft = (slot: number) =>
-    (slot - viewStartSlot) * SLOT_W + 2;
+  const trackWidth = visibleSlots * SLOT_W;
 
   return (
     <div
@@ -81,9 +80,10 @@ export function EmployeeRow({
       <div
         style={{
           position: "relative",
-          width: visibleSlots * SLOT_W,
+          width: trackWidth,
           minHeight: rowHeight,
           touchAction: "none",
+          overflow: "hidden", // wide bars / preview must never overflow the viewport
         }}
         onPointerDown={onTrackPointerDown}
       >
@@ -140,15 +140,25 @@ export function EmployeeRow({
           />
         )}
 
-        {/* Segment bars */}
+        {/* Segment bars — geometry clamped to the visible window so a bar that
+            extends past the edge never overflows / creates horizontal scroll. */}
         {visibleSegs.map((seg) => {
           const lane = laneMap.get(seg.id) ?? 0;
+          const clipStart = seg.startSlot < viewStartSlot;
+          const clipEnd = seg.endSlot > viewEndSlot;
+          const clampedStart = Math.max(seg.startSlot, viewStartSlot);
+          const clampedEnd = Math.min(seg.endSlot, viewEndSlot);
+          const visualLeft = (clampedStart - viewStartSlot) * SLOT_W + 2;
+          const visualWidth = (clampedEnd - clampedStart) * SLOT_W - 4;
           return (
             <SegmentBar
               key={seg.id}
               seg={seg}
               lane={lane}
-              visualLeft={toVisualLeft(seg.startSlot)}
+              visualLeft={visualLeft}
+              visualWidth={visualWidth}
+              clipStart={clipStart}
+              clipEnd={clipEnd}
               onPointerDown={(e) => onSegmentPointerDown(e, seg)}
               onResizeLeft={(e) => onResizeLeft(e, seg)}
               onResizeRight={(e) => onResizeRight(e, seg)}

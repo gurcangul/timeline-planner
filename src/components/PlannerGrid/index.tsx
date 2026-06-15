@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState, useEffect, useCallback } from "react";
+import { useRef, useMemo, useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { EMPLOYEES, LEFT_W, SLOT_W, DAY_W, DAYS_PER_WEEK, SLOTS_PER_WEEK, SLOTS_PER_DAY } from "@/constants";
 import { buildWorkingDays, TR_MONTH_NAMES } from "@/utils/date";
 import { useAssignments } from "@/hooks/useAssignments";
@@ -18,24 +18,32 @@ export function PlannerGrid() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [weekOffset, setWeekOffset] = useState(0);
 
-  // Measure scroll container width → compute how many full weeks fit
-  const [containerWidth, setContainerWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 1200
-  );
+  // Measure the ACTUAL scroll-container width (clientWidth excludes the vertical
+  // scrollbar). Seed with 0 → first paint renders MIN days, corrected before the
+  // browser paints by useLayoutEffect, so the grid never overflows horizontally.
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const measure = () => setContainerWidth(el.clientWidth);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    return () => ro.disconnect();
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, []);
 
-  // Fill the available width with as many whole DAYS as fit (not just whole weeks).
+  // Fill the available width with as many whole DAYS as fit. The safety margin
+  // keeps content strictly narrower than the container so `minWidth:100%` on the
+  // inner wrapper governs the width and no horizontal scrollbar can appear.
+  const SCROLLBAR_SAFETY = 4;
   const visibleDayCount = useMemo(() => {
-    const available = containerWidth - LEFT_W;
+    if (containerWidth <= 0) return MIN_VISIBLE_DAYS;
+    const available = containerWidth - LEFT_W - SCROLLBAR_SAFETY;
     return Math.max(MIN_VISIBLE_DAYS, Math.floor(available / DAY_W));
   }, [containerWidth]);
 
@@ -58,6 +66,13 @@ export function PlannerGrid() {
   const viewStartSlot = weekOffset * SLOTS_PER_WEEK;
   const visibleSlots  = visibleDayCount * SLOTS_PER_DAY;
   const totalSlots    = MAX_WEEKS * SLOTS_PER_WEEK;
+
+  // Navigation is re-slice based (not native horizontal scroll). Keep the
+  // container pinned to the left so a stray scroll offset never leaves the
+  // view stuck in empty space after paging.
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollLeft = 0;
+  }, [weekOffset, visibleDayCount]);
 
   const maxWeekOffset = Math.max(
     0,

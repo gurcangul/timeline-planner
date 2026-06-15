@@ -6,6 +6,11 @@ interface Props {
   seg: Assignment;
   lane: number;
   visualLeft: number;
+  /** Width already clamped to the visible window by EmployeeRow. */
+  visualWidth: number;
+  /** True when the bar is cut off at the start/end by the window edge. */
+  clipStart?: boolean;
+  clipEnd?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onResizeLeft: (e: React.PointerEvent) => void;
   onResizeRight: (e: React.PointerEvent) => void;
@@ -19,6 +24,9 @@ export function SegmentBar({
   seg,
   lane,
   visualLeft,
+  visualWidth,
+  clipStart = false,
+  clipEnd = false,
   onPointerDown,
   onResizeLeft,
   onResizeRight,
@@ -30,7 +38,7 @@ export function SegmentBar({
   if (!type) return null;
 
   const pinned = type.pinned;
-  const width = (seg.endSlot - seg.startSlot) * SLOT_W - 4;
+  const width = Math.max(SLOT_W - 4, visualWidth);
   const top = lane * LANE_H + 6;
 
   return (
@@ -48,7 +56,11 @@ export function SegmentBar({
         width,
         height: ROW_H - 12,
         border: `1.5px solid ${type.color}`,
-        borderRadius: 8,
+        // Flatten the corner that is cut off by the window edge.
+        borderTopLeftRadius: clipStart ? 0 : 8,
+        borderBottomLeftRadius: clipStart ? 0 : 8,
+        borderTopRightRadius: clipEnd ? 0 : 8,
+        borderBottomRightRadius: clipEnd ? 0 : 8,
         background: pinned
           ? `repeating-linear-gradient(45deg, ${type.softColor}, ${type.softColor} 6px, #fff0 6px, #fff0 10px)`
           : type.softColor,
@@ -62,7 +74,7 @@ export function SegmentBar({
         // No overflow:hidden here — delete button must not be clipped
       }}
     >
-      {!pinned && (
+      {!pinned && !clipStart && (
         <span className="seg__handle" onPointerDown={onResizeLeft} style={handleStyle("left")} />
       )}
 
@@ -94,7 +106,7 @@ export function SegmentBar({
         )}
       </span>
 
-      {!pinned && (
+      {!pinned && !clipEnd && (
         <span className="seg__handle" onPointerDown={onResizeRight} style={handleStyle("right")} />
       )}
 
