@@ -102,12 +102,16 @@ export function ExportModal({ assignments, allDays, onClose }: Props) {
             { label: "Bu ay", ...monthRange(today) },
             { label: "Bu çeyrek", ...quarterRange(today) },
             { label: "Bu yıl", ...yearRange(today) },
-          ].map(({ label, start, end }) => (
-            <button key={label} style={presetBtn}
+          ].map(({ label, start, end }) => {
+            const active =
+              toInputDateString(start) === startStr && toInputDateString(end) === endStr;
+            return (
+            <button key={label} style={{ ...presetBtn, ...(active ? presetBtnActive : {}) }}
               onClick={() => { setStartStr(toInputDateString(start)); setEndStr(toInputDateString(end)); }}>
               {label}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* Employee list */}
@@ -172,6 +176,7 @@ const closeBtn: React.CSSProperties = { border: "none", background: "#F1F5F9", w
 const lbl: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 600, color: "#475569", marginBottom: 6 };
 const dateInput: React.CSSProperties = { flex: 1, padding: "8px 10px", border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 13, boxSizing: "border-box", fontFamily: "Inter,-apple-system,sans-serif" };
 const presetBtn: React.CSSProperties = { padding: "4px 10px", border: "1.5px solid #E2E8F0", borderRadius: 20, fontSize: 11.5, background: "#F8FAFC", cursor: "pointer", color: "#475569", fontWeight: 600 };
+const presetBtnActive: React.CSSProperties = { background: "#0D9488", borderColor: "#0D9488", color: "#fff" };
 const empList: React.CSSProperties = { maxHeight: 220, overflowY: "auto", border: "1px solid #E2E8F0", borderRadius: 10 };
 const empRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", cursor: "pointer", borderBottom: "1px solid #F1F5F9" };
 const avatar: React.CSSProperties = { width: 28, height: 28, minWidth: 28, borderRadius: 7, background: "#1E293B", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 };

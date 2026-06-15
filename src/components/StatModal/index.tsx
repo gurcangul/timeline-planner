@@ -97,12 +97,16 @@ export function StatModal({ target, assignments, allDays, onClose }: Props) {
             onChange={(e) => setEndStr(e.target.value)} style={dateInput} />
         </div>
         <div style={{ display: "flex", gap: 6, marginBottom: 18, flexWrap: "wrap" }}>
-          {presets.map(({ label, start, end }) => (
-            <button key={label} style={presetBtn}
-              onClick={() => { setStartStr(toInputDateString(start)); setEndStr(toInputDateString(end)); }}>
-              {label}
-            </button>
-          ))}
+          {presets.map(({ label, start, end }) => {
+            const active =
+              toInputDateString(start) === startStr && toInputDateString(end) === endStr;
+            return (
+              <button key={label} style={{ ...presetBtn, ...(active ? presetBtnActive : {}) }}
+                onClick={() => { setStartStr(toInputDateString(start)); setEndStr(toInputDateString(end)); }}>
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         {!slotRange && (
@@ -228,6 +232,7 @@ const ttl: React.CSSProperties = { fontSize: 18, fontWeight: 800, color: "#0F172
 const closeBtn: React.CSSProperties = { border: "none", background: "#F1F5F9", width: 30, height: 30, borderRadius: 8, fontSize: 18, cursor: "pointer", color: "#475569" };
 const dateInput: React.CSSProperties = { flex: 1, padding: "7px 9px", border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 12.5, boxSizing: "border-box", fontFamily: "Inter,-apple-system,sans-serif" };
 const presetBtn: React.CSSProperties = { padding: "4px 10px", border: "1.5px solid #E2E8F0", borderRadius: 20, fontSize: 11.5, background: "#F8FAFC", cursor: "pointer", color: "#475569", fontWeight: 600 };
+const presetBtnActive: React.CSSProperties = { background: "#4F46E5", borderColor: "#4F46E5", color: "#fff" };
 const legendRow: React.CSSProperties = { display: "flex", alignItems: "center", gap: 8, marginBottom: 8 };
 const dot: React.CSSProperties = { width: 10, height: 10, borderRadius: "50%", flexShrink: 0, display: "inline-block" };
 const allGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 };

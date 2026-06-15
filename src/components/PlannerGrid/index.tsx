@@ -1,5 +1,5 @@
 import { useRef, useMemo, useState, useEffect, useLayoutEffect, useCallback } from "react";
-import { EMPLOYEES, LEFT_W, SLOT_W, DAY_W, DAYS_PER_WEEK, SLOTS_PER_WEEK, SLOTS_PER_DAY } from "@/constants";
+import { EMPLOYEES, ACTIVITY_TYPES, LEFT_W, SLOT_W, DAY_W, DAYS_PER_WEEK, SLOTS_PER_WEEK, SLOTS_PER_DAY } from "@/constants";
 import { buildWorkingDays, TR_MONTH_NAMES } from "@/utils/date";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useDragInteraction } from "@/hooks/useDragInteraction";
@@ -8,6 +8,7 @@ import { EmployeeRow } from "./EmployeeRow";
 import { AssignModal } from "@/components/AssignModal";
 import { ExportModal } from "@/components/ExportModal";
 import { StatModal } from "@/components/StatModal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import type { Assignment } from "@/types";
 
 const MAX_WEEKS = 104;
@@ -49,6 +50,7 @@ export function PlannerGrid() {
 
   // Modal states
   const [editSegment, setEditSegment] = useState<Assignment | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Assignment | null>(null);
   const [showToolbarCreate, setShowToolbarCreate] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [statTarget, setStatTarget] = useState<string | "all" | null>(null);
@@ -190,7 +192,7 @@ export function PlannerGrid() {
                 onSegmentPointerDown={(e, seg) => startMove(e, seg)}
                 onResizeLeft={(e, seg) => startResize(e, seg, "l")}
                 onResizeRight={(e, seg) => startResize(e, seg, "r")}
-                onDelete={deleteAssignment}
+                onDelete={setPendingDelete}
                 onSegmentDoubleClick={setEditSegment}
                 onEmployeeClick={(id) => setStatTarget(id)}
               />
@@ -234,7 +236,7 @@ export function PlannerGrid() {
           existing={editSegment}
           allDays={allWorkingDays}
           onClose={() => setEditSegment(null)}
-          onDelete={() => { deleteAssignment(editSegment.id); setEditSegment(null); }}
+          onDelete={() => { setPendingDelete(editSegment); setEditSegment(null); }}
           onSave={(data) => {
             const ok = updateAssignment(editSegment.id, data);
             if (ok) setEditSegment(null);
@@ -257,6 +259,20 @@ export function PlannerGrid() {
           assignments={assignments}
           allDays={allWorkingDays}
           onClose={() => setStatTarget(null)}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {pendingDelete && (
+        <ConfirmModal
+          title="Planı sil"
+          message={`"${pendingDelete.label || ACTIVITY_TYPES[pendingDelete.typeId]?.short || "Plan"}" silinecek. Bu işlem geri alınamaz.`}
+          confirmLabel="Sil"
+          onConfirm={() => {
+            deleteAssignment(pendingDelete.id);
+            setPendingDelete(null);
+          }}
+          onCancel={() => setPendingDelete(null)}
         />
       )}
     </div>

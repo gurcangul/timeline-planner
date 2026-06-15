@@ -18,7 +18,7 @@ interface Props {
   onSegmentPointerDown: (e: React.PointerEvent, seg: Assignment) => void;
   onResizeLeft: (e: React.PointerEvent, seg: Assignment) => void;
   onResizeRight: (e: React.PointerEvent, seg: Assignment) => void;
-  onDelete: (id: string) => void;
+  onDelete: (seg: Assignment) => void;
   onSegmentDoubleClick: (seg: Assignment) => void;
   onEmployeeClick: (employeeId: string) => void;
 }
@@ -162,7 +162,7 @@ export function EmployeeRow({
               onPointerDown={(e) => onSegmentPointerDown(e, seg)}
               onResizeLeft={(e) => onResizeLeft(e, seg)}
               onResizeRight={(e) => onResizeRight(e, seg)}
-              onDelete={() => onDelete(seg.id)}
+              onDelete={() => onDelete(seg)}
               onDoubleClick={() => onSegmentDoubleClick(seg)}
             />
           );
