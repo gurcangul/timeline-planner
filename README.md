@@ -61,6 +61,26 @@ npm start        # geliştirme sunucusu → http://localhost:5173
 
 ---
 
+## Nasıl Kullanılır?
+
+1. **Plan oluştur** — Bir denetçinin satırında boş alanı yatay olarak **sürükle**,
+   bırakınca açılan modalda tür/tarih seç ve kaydet. Tek tıklama tam günü seçer.
+   Alternatif: sağ üstteki **+ Plan Ekle** ile denetçi seçerek oluştur.
+2. **Taşı** — Bir planı tutup sürükle. Yoluna çıkan planlar otomatik sağa kayar
+   (cascade). İzin/Sağlık planları sabittir, kaymaz.
+3. **Uzat / kısalt** — Planın sol veya sağ kenarından tut ve sürükle. Bu işlem
+   komşu planları **kaydırmaz**.
+4. **Uzak tarihe sürükle** — Sürüklerken ekranın kenarına dayan; takvim hafta hafta
+   otomatik ilerler, böylece ekranda görünmeyen tarihlere de plan koyabilirsin.
+5. **Düzenle / sil** — Plana **çift tıkla** → düzenleme modalı. Plan üzerine gelince
+   sağ üstte çıkan **×** ile sil.
+6. **Gezin** — Sol üstteki **‹ ›** oklarıyla haftalar arasında ilerle.
+7. **İstatistik** — Soldaki bir denetçiye tıkla → bireysel pasta grafik. "Denetçi"
+   başlığına tıkla → tüm ekip dağılımı.
+8. **Excel'e aktar** — **Dışa Aktar** ile denetçi ve tarih aralığı seçip `.xlsx` indir.
+
+---
+
 ## Slot Modeli
 
 Tüm zaman aritmetiği **yarım gün slotları** üzerinden yürür:
@@ -118,7 +138,7 @@ src/
 │   └── export.ts               # SheetJS xlsx üretimi
 │
 ├── constants/index.ts          # Boyutlar, slot sabitleri, denetçiler, türler, şubeler
-├── data/seedData.ts            # Örnek veri (57 atama, 13 denetçi)
+├── data/seedData.ts            # Örnek veri (64 atama, 13 denetçi)
 ├── types/index.ts              # Çekirdek TypeScript arayüzleri
 ├── styles/global.css
 ├── App.tsx
