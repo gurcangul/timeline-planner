@@ -6,7 +6,7 @@ export function PlannerHeader() {
     <header className={styles.header}>
       <div>
         <div className={styles.kicker}>İÇ KONTROL · DENETİM PLANI</div>
-        <h1 className={styles.title}>Saha Çizelgesi Uygulaması</h1>
+        <h1 className={styles.title}>Saha Çizelgesi Uygulaması - Mustafa Mustafa Gül</h1>
       </div>
       <div className={styles.legend}>
         {ACTIVITY_TYPE_LIST.map((type) => (
